@@ -1,0 +1,6 @@
+{
+  "DBUser": "root",
+  "DBPassword": "root", // "Walmart1"
+  "DBHost": "localhost", // "database-demoapp2.co36zxsggi7z.us-west-1.rds.amazonaws.com"
+  "DBName": "mathbloom"
+}
