@@ -19,6 +19,15 @@ func GetUser(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"user": user})
 }
 
+// GET /user/:email
+func GetUserByEmail(c *gin.Context) {
+	db := c.MustGet("db").(*gorm.DB)
+	email := c.Param("email")
+	var user models.User
+	db.Where("email = ?", email).First(&user)
+	c.JSON(http.StatusOK, gin.H{"user": user})
+}
+
 // POST /user
 func InsertUser(c *gin.Context) {
 	db := c.MustGet("db").(*gorm.DB)

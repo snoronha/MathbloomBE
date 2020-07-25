@@ -18,7 +18,8 @@ func main() {
 		c.Next()
 	})
 
-	router.GET("/api/user/:user_id", controllers.GetUser)
+	router.GET("/api/user/id/:user_id", controllers.GetUser)
+	router.GET("/api/user/email/:email", controllers.GetUserByEmail)
 	router.POST("/api/user", controllers.InsertUser)
 	router.GET("/api/access_token/:user_id", controllers.GetAccessToken)
 	router.POST("/api/access_token", controllers.InsertAccessToken)
