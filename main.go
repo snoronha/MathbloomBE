@@ -18,10 +18,10 @@ func main() {
 		c.Next()
 	})
 
-	router.GET("/user/:user_id", controllers.GetUser)
-	router.POST("/user", controllers.InsertUser)
-	router.GET("/access_token/:user_id", controllers.GetAccessToken)
-	router.POST("/access_token", controllers.InsertAccessToken)
+	router.GET("/api/user/:user_id", controllers.GetUser)
+	router.POST("/api/user", controllers.InsertUser)
+	router.GET("/api/access_token/:user_id", controllers.GetAccessToken)
+	router.POST("/api/access_token", controllers.InsertAccessToken)
 	// router.GET("/item/:id", controllers.FindItem) // new
 	// router.GET("/items", controllers.FindItems) // new
 	// router.GET("/items/search", controllers.SearchItems)
