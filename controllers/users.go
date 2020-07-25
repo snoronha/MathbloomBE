@@ -15,7 +15,7 @@ func GetUser(c *gin.Context) {
 	db := c.MustGet("db").(*gorm.DB)
 	userId, _ := strconv.ParseInt(c.Param("user_id"), 10, 64)
 	var user models.User
-	db.Where("user_id = ?", userId).First(&user)
+	db.Where("id = ?", userId).First(&user)
 	c.JSON(http.StatusOK, gin.H{"user": user})
 }
 
