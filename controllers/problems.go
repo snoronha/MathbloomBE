@@ -50,9 +50,10 @@ func UpsertProblemWithEmail(c *gin.Context) {
 			log.Print(err)
 		}
 		// Upsert into access_tokens 
-		db.Where(models.Problem{UserId: user.ID}).
+		db.Where(models.Problem{Guid: problem.Guid}).
 			Assign(models.Problem{
 				UserId: user.ID,
+				Guid: problem.Guid,
 				Specs: problem.Specs,
 				Answer: problem.Answer,
 				Attempt: problem.Attempt,
