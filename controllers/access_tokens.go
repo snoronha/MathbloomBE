@@ -20,19 +20,30 @@ func GetAccessToken(c *gin.Context) {
 }
 
 // POST /user
-func InsertAccessToken(c *gin.Context) {
+func UpsertAccessTokenWithEmail(c *gin.Context) {
 	db := c.MustGet("db").(*gorm.DB)
-	var accessToken models.AccessToken
-	err := c.BindJSON(&accessToken)
-	if err != nil {
-		log.Print(err)
-	}
-	db.Create(&accessToken)
-	fail := db.NewRecord(accessToken) // check if insert succeeded
-	if !fail {
+	// Check if user with email exists
+	email := c.Param("email")
+	var user models.User
+	db.Where("email = ?", email).First(&user)
+	if user.ID > 0 {
+		var accessToken models.AccessToken
+		err := c.BindJSON(&accessToken)
+		if err != nil {
+			log.Print(err)
+		}
+		// Upsert into access_tokens 
+		db.Where(models.AccessToken{UserId: user.ID}).
+			Assign(models.AccessToken{
+				AccessToken: accessToken.AccessToken,
+				TokenId: accessToken.TokenId,
+				ExpiresAt: accessToken.ExpiresAt,
+				ExpiresIn: accessToken.ExpiresIn,
+				FirstIssuedAt: accessToken.FirstIssuedAt,
+			}).
+			FirstOrCreate(&accessToken)
 		c.JSON(http.StatusOK, gin.H{"error": ""})
 	} else {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "accessToken exists"})
+		c.JSON(http.StatusOK, gin.H{"error": "no user exists for email: " + email})
 	}
-
 }

@@ -22,7 +22,7 @@ func main() {
 	router.GET("/api/user/email/:email", controllers.GetUserByEmail)
 	router.POST("/api/user", controllers.InsertUser)
 	router.GET("/api/access_token/:user_id", controllers.GetAccessToken)
-	router.POST("/api/access_token", controllers.InsertAccessToken)
+	router.POST("/api/access_token/email/:email", controllers.UpsertAccessTokenWithEmail)
 	// router.GET("/item/:id", controllers.FindItem) // new
 	// router.GET("/items", controllers.FindItems) // new
 	// router.GET("/items/search", controllers.SearchItems)
