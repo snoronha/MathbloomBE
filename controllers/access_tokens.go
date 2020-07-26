@@ -35,6 +35,7 @@ func UpsertAccessTokenWithEmail(c *gin.Context) {
 		// Upsert into access_tokens 
 		db.Where(models.AccessToken{UserId: user.ID}).
 			Assign(models.AccessToken{
+				UserId: user.ID,
 				AccessToken: accessToken.AccessToken,
 				TokenId: accessToken.TokenId,
 				ExpiresAt: accessToken.ExpiresAt,
