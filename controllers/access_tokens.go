@@ -19,7 +19,8 @@ func GetAccessToken(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"accessToken": accessToken})
 }
 
-// POST /user
+// POST /access_token/email/:email
+// Derive userId from :email and upsert into access_tokens
 func UpsertAccessTokenWithEmail(c *gin.Context) {
 	db := c.MustGet("db").(*gorm.DB)
 	// Check if user with email exists

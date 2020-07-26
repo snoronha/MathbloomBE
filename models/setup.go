@@ -14,6 +14,7 @@ func SetupModels() *gorm.DB {
 
 	db.AutoMigrate(&User{})
 	db.AutoMigrate(&AccessToken{})
+	db.AutoMigrate(&Problem{})
 
 	return db
 }
