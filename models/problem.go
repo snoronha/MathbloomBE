@@ -1,11 +1,11 @@
 package models
 
 import (
-	_ "github.com/jinzhu/gorm"
+	"github.com/jinzhu/gorm"
 )
 
 type Problem struct {
-	ID            uint    `json:"id" gorm:"primary_key"`
+	gorm.Model
 	Guid          string  `json:"guid" gorm:"type:varchar(40);unique_index"`
 	UserId        uint    `json:"userId"`
     Specs         string  `json:"specs" sql:"type:varchar(512)"`
