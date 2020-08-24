@@ -51,6 +51,7 @@ func UpsertQuestionWithEmail(c *gin.Context) {
 			log.Print(err)
 		}
 		// Upsert into questions
+		question.UserId = user.ID
 		if question.ID > 0 {
 			db.Assign(models.Question{
 				UserId:     user.ID,
