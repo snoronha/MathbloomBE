@@ -29,6 +29,9 @@ func main() {
 	router.GET("/api/question/:id", controllers.GetQuestionById)
 	router.GET("/api/questions/email/:email", controllers.GetQuestionsByEmail)
 	router.POST("/api/question/email/:email", controllers.UpsertQuestionWithEmail)
+	router.GET("/api/answer/:id", controllers.GetAnswerById)
+	router.GET("/api/answers/:question_id", controllers.GetAnswersByQuestionId)
+	router.POST("/api/answer/email/:email", controllers.UpsertAnswerWithEmail)
 	// router.GET("/item/:id", controllers.FindItem) // new
 	// router.GET("/items", controllers.FindItems) // new
 	// router.GET("/items/search", controllers.SearchItems)
