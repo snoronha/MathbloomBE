@@ -23,6 +23,7 @@ func GetQuestionById(c *gin.Context) {
 // Get all questions asked by user/email
 func GetQuestionsByEmail(c *gin.Context) {
 	var questions []models.Question
+	var answers []models.Answer
 	db := c.MustGet("db").(*gorm.DB)
 	// Check if user with email exists
 	email := c.Param("email")
@@ -30,9 +31,17 @@ func GetQuestionsByEmail(c *gin.Context) {
 	db.Where("email = ?", email).First(&user)
 	if user.ID > 0 {
 		db.Where("user_id = ?", user.ID).Find(&questions)
-		c.JSON(http.StatusOK, gin.H{"questions": questions})
+		// iterate over questions to get question.ID
+		// retrieve answers with those question.IDs
+		questionIds := []uint{}
+		for _, question := range questions {
+			questionIds = append(questionIds, question.ID)
+		}
+		// log.Print(questionIds)
+		db.Where("question_id IN (?)", questionIds).Find(&answers)
+		c.JSON(http.StatusOK, gin.H{"questions": questions, "answers": answers})
 	} else {
-		c.JSON(http.StatusOK, gin.H{"questions": questions})
+		c.JSON(http.StatusOK, gin.H{"questions": questions, "answers": answers})
 	}
 }
 
