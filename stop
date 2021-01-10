@@ -1,0 +1,16 @@
+#!/bin/bash
+
+echo "Stopping server ..."
+if test -f "logs/run.pid"; then
+    cmd=`cd $GOPATH/src/MathbloomBE; kill -TERM \`cat logs/run.pid\``
+    `sleep 1`
+    cmd=`cd $GOPATH/src/MathbloomBE; rm -f logs/run.pid`
+    echo "Server stopped. Cleanup done"
+else
+    echo "Error: logs/run.pid not found"
+    pid=$(lsof -nP -iTCP:8081 | grep LISTEN | awk '{print $2}')
+    if [ ! -z "$pid" ]; then	
+	echo "Please kill process with pid: $pid"
+    fi
+    exit
+fi    

@@ -11,11 +11,11 @@ else
     exit
 fi    
 if ! command -v mysql &> /dev/null; then
-    echo "Error: mysql found found. Please install mysql"
+    echo "Error: mysql not found. Please install mysql"
     exit
 fi
 if ! command -v jq &> /dev/null; then
-    echo "Error: jq found found. Please install"
+    echo "Error: jq found found. Please install jq"
     exit
 fi
 
