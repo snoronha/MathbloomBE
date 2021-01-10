@@ -1,0 +1,93 @@
+user       ec2-user ec2-user;  ## Default: nobody
+worker_processes  5;  ## Default: 1
+error_log  /home/ec2-user/http/logs/error.log;
+pid        /home/ec2-user/http/logs/nginx.pid;
+worker_rlimit_nofile 8192;
+
+events {
+  worker_connections  4096;  ## Default: 1024
+}
+
+http {
+  include  /home/ec2-user/http/conf/mime.types;
+  index    index.html index.htm index.php;
+
+  default_type application/octet-stream;
+  log_format   main '$remote_addr - $remote_user [$time_local]  $status '
+    '"$request" $body_bytes_sent "$http_referer" '
+    '"$http_user_agent" "$http_x_forwarded_for"';
+  access_log   /home/ec2-user/http/logs/access.log  main;
+  sendfile     on;
+  tcp_nopush   on;
+  server_names_hash_bucket_size 128; # this seems to be required for some vhosts
+
+  server { # decrep.it
+    listen       80;
+    listen       443 ssl;
+    server_name  decrep.it www.decrep.it;
+    access_log   /home/ec2-user/http/logs/decrepit.access.log  main;
+    ssl_certificate "/home/ec2-user/.acme.sh/decrep.it/fullchain.cer";
+    ssl_certificate_key "/home/ec2-user/.acme.sh/decrep.it/decrep.it.key";
+    ssl_protocols       TLSv1 TLSv1.1 TLSv1.2;
+    ssl_ciphers         HIGH:!aNULL:!MD5;
+    gzip on;
+    gzip_types      text/plain application/xml application/json;
+    gzip_proxied    no-cache no-store private expired auth;
+    gzip_min_length 1000;
+
+    # serve static files
+    location ~ ^/(images|javascript|js|css|flash|media|static)/  {
+      root    /home/ec2-user/http/domains/decrep.it;
+      expires 30d;
+    }
+
+    # pass requests for dynamic content to rails/turbogears/zope, et al
+    location / {
+      proxy_pass      http://127.0.0.1:8080/;
+      # root    /home/ec2-user/http/domains/decrep.it;
+    }
+
+  }
+
+  # server { # mathbloom.org http --> https redirect
+  #   listen       80;
+  #   server_name  api.mathbloom.org db.mathbloom.org;
+  #   return 301 https://$host$request_uri;
+  # }
+
+  server { # api.mathbloom.org, db.mathbloom.org
+    listen       80;
+    listen       443 ssl http2;
+    server_name  api.mathbloom.org db.mathbloom.org;
+    access_log   /home/ec2-user/http/logs/mathbloom.access.log;
+    error_log   /home/ec2-user/http/logs/mathbloom.error.log;
+    ssl_certificate "/home/ec2-user/.acme.sh/mathbloom.org/fullchain.cer";
+    ssl_certificate_key "/home/ec2-user/.acme.sh/mathbloom.org/mathbloom.org.key";
+    ssl_protocols       TLSv1 TLSv1.1 TLSv1.2;
+    ssl_ciphers         HIGH:!aNULL:!MD5;
+    gzip on;
+    gzip_types      text/plain application/xml application/json application/javascript;
+    gzip_proxied    no-cache no-store private expired auth;
+    gzip_min_length 1000;
+
+    root /home/ec2-user/http/domains/mathbloom.org;
+    index index.html;
+
+    location /api { # API endpoint
+      proxy_pass      http://127.0.0.1:8081/api;
+    }
+
+    # location / {
+    #   try_files $uri $uri/ =404;
+    # }
+
+    # serve static files
+    location ~ ^/(images|javascript|js|css|flash|media|static)/  {
+      root    /home/ec2-user/http/domains/mathbloom.org/mathbloom/build;
+      index index.html
+      expires 30d;
+    }
+
+  }
+
+}
