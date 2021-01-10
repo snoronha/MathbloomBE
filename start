@@ -3,27 +3,36 @@
 uname=`uname`
 echo "System: $uname"
 
-echo "Checking dependencies ..."
+echo "Checking dependencies: conf.json"
 if test -f "conf.json"; then
     echo "conf.json exists"
 else
     echo "Error: conf.json does not exist"
     exit
-fi    
+fi
+echo "Checking dependencies: mysql"
 if ! command -v mysql &> /dev/null; then
     echo "Error: mysql not found. Please install mysql"
     exit
 fi
+echo "Checking dependencies: jq"
 if ! command -v jq &> /dev/null; then
     echo "Error: jq found found. Please install jq"
     exit
 fi
+echo "Checking dependencies: nginx running?"
+nginx=$(pgrep nginx)
+if [[ "$nginx" == "" ]]; then
+    echo "Error: nginx not running. Please start nginx"
+    exit
+fi
 
+echo "Reading conf.json ..."
 DBUser=`cat conf.json | jq -r '.DBUser'`
 DBHost=`cat conf.json | jq -r '.DBHost'`
 DBName=`cat conf.json | jq -r '.DBName'`
+
 echo "Testing mysql: mysql --user=$DBUser --host=$DBHost $DBName -p -e\"quit\""
-# $(mysql --user=$DBUser --host=$DBHost $DBName -p -e"quit")
 if mysql --user=$DBUser --host=$DBHost -p -e "USE $DBName"; then
     echo "Connect to database $DBName succeeded"
 else
@@ -38,4 +47,4 @@ echo "Sleeping 5 seconds to allow main process to start ..."
 `sleep 5`
 pid=$(lsof -nP -iTCP:8081 | grep LISTEN | awk '{print $2}')
 echo "$pid" > $GOPATH/src/MathbloomBE/logs/run.pid
-echo "Server started"
+echo "Server started (pid $pid)"
