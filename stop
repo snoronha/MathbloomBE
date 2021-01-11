@@ -1,13 +1,21 @@
 #!/bin/bash
 
+if [ ! -z "$GOPATH" ]; then
+    echo "Checking existence of \$GOPATH: $GOPATH"
+else
+    echo "Error: \$GOPATH is not set"
+    exit
+fi
+
 echo "Stopping server ..."
-if test -f "logs/run.pid"; then
-    cmd=`cd $GOPATH/src/MathbloomBE; kill -TERM \`cat logs/run.pid\``
+homedir="$GOPATH/src/MathbloomBE"
+if test -f "$homedir/logs/run.pid"; then
+    cmd=`kill -TERM \`cat $homedir/logs/run.pid\``
     `sleep 1`
-    cmd=`cd $GOPATH/src/MathbloomBE; rm -f logs/run.pid`
+    cmd=`rm -f $homedir/logs/run.pid`
     echo "Server stopped. Cleanup done"
 else
-    echo "Error: logs/run.pid not found"
+    echo "Error: $homedir/logs/run.pid not found"
     pid=$(lsof -nP -iTCP:8081 | grep LISTEN | awk '{print $2}')
     if [ ! -z "$pid" ]; then	
 	echo "Please kill process with pid: $pid"
