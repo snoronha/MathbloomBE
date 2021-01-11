@@ -3,11 +3,20 @@
 uname=`uname`
 echo "System: $uname"
 
-echo "Checking dependencies: conf.json"
-if test -f "conf.json"; then
-    echo "conf.json exists"
+if [ ! -z "$GOPATH" ]; then
+    echo "Checking existence of \$GOPATH: $GOPATH"
 else
-    echo "Error: conf.json does not exist"
+    echo "Error: \$GOPATH is not set"
+    exit
+fi
+
+homedir="$GOPATH/src/MathbloomBE"
+
+echo "Checking dependencies: $homedir/conf.json"
+if test -f "$homedir/conf.json"; then
+    echo "$homedir/conf.json exists"
+else
+    echo "Error: $homedir/conf.json does not exist"
     exit
 fi
 echo "Checking dependencies: mysql"
@@ -28,9 +37,9 @@ if [[ "$nginx" == "" ]]; then
 fi
 
 echo "Reading conf.json ..."
-DBUser=`cat conf.json | jq -r '.DBUser'`
-DBHost=`cat conf.json | jq -r '.DBHost'`
-DBName=`cat conf.json | jq -r '.DBName'`
+DBUser=`cat $homedir/conf.json | jq -r '.DBUser'`
+DBHost=`cat $homedir/conf.json | jq -r '.DBHost'`
+DBName=`cat $homedir/conf.json | jq -r '.DBName'`
 
 echo "Testing mysql: mysql --user=$DBUser --host=$DBHost $DBName -p -e\"quit\""
 if mysql --user=$DBUser --host=$DBHost -p -e "USE $DBName"; then
@@ -42,9 +51,9 @@ fi
 
 echo "-----------------------------------------------"
 echo "All dependencies checked. Invoking main process"
-cmd=`cd $GOPATH/src/MathbloomBE; nohup go run $GOPATH/src/MathbloomBE/main.go >> $GOPATH/src/MathbloomBE/logs/mathbloom.log 2>&1 &`
+cmd=`cd $homedir; nohup go run main.go >> logs/mathbloom.log 2>&1 &`
 echo "Sleeping 5 seconds to allow main process to start ..."
 `sleep 5`
 pid=$(lsof -nP -iTCP:8081 | grep LISTEN | awk '{print $2}')
-echo "$pid" > $GOPATH/src/MathbloomBE/logs/run.pid
+echo "$pid" > $homedir/logs/run.pid
 echo "Server started (pid $pid)"
