@@ -73,6 +73,7 @@ func GetUrltext(url string, client http.Client) []byte {
 }
 
 func CreateUploadFileStructure() {
+	MAX_DIRS := 256
 	fullPath := os.Getenv("GOPATH") + "/src/MathbloomBE/uploads"
     if _, err := os.Stat(fullPath); os.IsNotExist(err) {
 		// uploads does not exist, create uploads and subdirectory structure
@@ -80,7 +81,7 @@ func CreateUploadFileStructure() {
     	if err != nil {
 			log.Fatal("Unable to create uploads directory: " + fullPath)
 		}
-		for i := 0; i < 256; i++ {
+		for i := 0; i < MAX_DIRS; i++ {
 			hex1 := fmt.Sprintf("%02X", i)
 			level1Path := fullPath + "/" + hex1
 			if _, err = os.Stat(level1Path); os.IsNotExist(err) {
@@ -89,7 +90,7 @@ func CreateUploadFileStructure() {
 					log.Fatal("Unable to create uploads subdirectory: " + level1Path)
 				}
 			}
-			for j := 0; j < 256; j++ {
+			for j := 0; j < MAX_DIRS; j++ {
 				hex2 := fmt.Sprintf("%02X", j)
 				level2Path := fullPath + "/" + hex1 + "/" + hex2
 				if _, err = os.Stat(level2Path); os.IsNotExist(err) {
