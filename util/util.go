@@ -72,6 +72,37 @@ func GetUrltext(url string, client http.Client) []byte {
 	return body
 }
 
+func CreateUploadFileStructure() {
+	fullPath := os.Getenv("GOPATH") + "/src/MathbloomBE/uploads"
+    if _, err := os.Stat(fullPath); os.IsNotExist(err) {
+		// uploads does not exist, create uploads and subdirectory structure
+		err = os.Mkdir(fullPath, 0755)
+    	if err != nil {
+			log.Fatal("Unable to create uploads directory: " + fullPath)
+		}
+		for i := 0; i < 256; i++ {
+			hex1 := fmt.Sprintf("%02X", i)
+			level1Path := fullPath + "/" + hex1
+			if _, err = os.Stat(level1Path); os.IsNotExist(err) {
+				err = os.Mkdir(level1Path, 0755)
+				if err != nil {
+					log.Fatal("Unable to create uploads subdirectory: " + level1Path)
+				}
+			}
+			for j := 0; j < 256; j++ {
+				hex2 := fmt.Sprintf("%02X", j)
+				level2Path := fullPath + "/" + hex1 + "/" + hex2
+				if _, err = os.Stat(level2Path); os.IsNotExist(err) {
+					err = os.Mkdir(level2Path, 0755)
+					if err != nil {
+						log.Fatal("Unable to create uploads subdirectory: " + level2Path)
+					}
+				}
+			}
+		}
+	}
+}
+
 func StemSentence(str string) string {
 	reg, err    := regexp.Compile("[^a-zA-Z]+")
 	strs        := strings.Fields(str)

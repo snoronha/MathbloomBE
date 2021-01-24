@@ -3,6 +3,7 @@ package main
 import (
 	"MathbloomBE/controllers"
 	"MathbloomBE/models"
+	"MathbloomBE/util"
 
 	"github.com/gin-gonic/gin"
 )
@@ -10,6 +11,10 @@ import (
 func main() {
 	router := gin.Default()
 
+	// Check for uploads structure
+	util.CreateUploadFileStructure()
+
+	// Setup DB models if not exist
 	db := models.SetupModels()
 
 	// Provide db variable to controllers

@@ -61,5 +61,7 @@ buck-out/
 # App Config
 conf.json
 
-# logs
+# logs, uploads
 logs/
+uploads/
+
