@@ -18,37 +18,37 @@ import (
 )
 
 func GetDB() *gorm.DB {
-    fullPath := os.Getenv("GOPATH") + "/src/MathbloomBE"
-    absFile, err := filepath.Abs(fullPath + "/conf.json")
-    if err != nil {
-        panic("Failed to get absolute path")
-    }
-    file, fileErr := ioutil.ReadFile(absFile)
-    if fileErr != nil {
-        panic("Failed to read conf.json")
-    }
-    type Conf struct{
-        DBUser     string
-        DBPassword string
-        DBHost     string
-        DBName     string
-    }
+	fullPath := os.Getenv("GOPATH") + "/src/MathbloomBE"
+	absFile, err := filepath.Abs(fullPath + "/conf.json")
+	if err != nil {
+		panic("Failed to get absolute path")
+	}
+	file, fileErr := ioutil.ReadFile(absFile)
+	if fileErr != nil {
+		panic("Failed to read conf.json")
+	}
+	type Conf struct {
+		DBUser     string
+		DBPassword string
+		DBHost     string
+		DBName     string
+	}
 
-    conf := Conf{}
-    err   = json.Unmarshal([]byte(file), &conf)
-    if err != nil {
-        panic("Failed to read unmarshal json")
-    }
+	conf := Conf{}
+	err = json.Unmarshal([]byte(file), &conf)
+	if err != nil {
+		panic("Failed to read unmarshal json")
+	}
 
-    dbStr   := fmt.Sprintf(
-        "%s:%s@(%s)/%s?charset=utf8&parseTime=True&loc=Local", 
-        conf.DBUser, conf.DBPassword, conf.DBHost, conf.DBName,
-    )
+	dbStr := fmt.Sprintf(
+		"%s:%s@(%s)/%s?charset=utf8&parseTime=True&loc=Local",
+		conf.DBUser, conf.DBPassword, conf.DBHost, conf.DBName,
+	)
 	db, err := gorm.Open("mysql", dbStr)
 	if err != nil {
-	  panic("Failed to connect: " + err.Error())
-    }
-    return db
+		panic("Failed to connect: " + err.Error())
+	}
+	return db
 }
 
 func GetUrltext(url string, client http.Client) []byte {
@@ -75,10 +75,10 @@ func GetUrltext(url string, client http.Client) []byte {
 func CreateUploadFileStructure() {
 	MAX_DIRS := 256
 	fullPath := os.Getenv("GOPATH") + "/src/MathbloomBE/uploads"
-    if _, err := os.Stat(fullPath); os.IsNotExist(err) {
+	if _, err := os.Stat(fullPath); os.IsNotExist(err) {
 		// uploads does not exist, create uploads and subdirectory structure
 		err = os.Mkdir(fullPath, 0755)
-    	if err != nil {
+		if err != nil {
 			log.Fatal("Unable to create uploads directory: " + fullPath)
 		}
 		for i := 0; i < MAX_DIRS; i++ {
@@ -105,16 +105,16 @@ func CreateUploadFileStructure() {
 }
 
 func StemSentence(str string) string {
-	reg, err    := regexp.Compile("[^a-zA-Z]+")
-	strs        := strings.Fields(str)
+	reg, err := regexp.Compile("[^a-zA-Z]+")
+	strs := strings.Fields(str)
 	if err != nil {
-        log.Fatal(err)
-    }
+		log.Fatal(err)
+	}
 	stemmedStrs := []string{}
 	for _, word := range strs {
 		stemmedWord := reg.ReplaceAllString(word, "")
-		stemmedWord  = porterstemmer.StemString(strings.ToLower(stemmedWord))
-		stemmedStrs  = append(stemmedStrs, stemmedWord)
+		stemmedWord = porterstemmer.StemString(strings.ToLower(stemmedWord))
+		stemmedStrs = append(stemmedStrs, stemmedWord)
 	}
 	return strings.Join(stemmedStrs[:], " ")
 }
@@ -122,7 +122,7 @@ func StemSentence(str string) string {
 // Distance in meters between (lat1, lng1) and (lat2, lng2)
 func Distance(lat1, lng1, lat2, lng2 float64) float64 {
 	// convert to radians
-  	// must cast radius as float to multiply later
+	// must cast radius as float to multiply later
 	var la1, ln1, la2, ln2, r float64
 	la1 = lat1 * math.Pi / 180
 	ln1 = lng1 * math.Pi / 180
