@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"MathbloomBE/models"
+	"fmt"
 	"log"
 	"net/http"
 	"path/filepath"
@@ -88,25 +89,27 @@ func UpsertQuestionAttachmentWithEmail(c *gin.Context) {
 	var user models.User
 	db.Where("email = ?", email).First(&user)
 	if user.ID > 0 {
-		file, err := c.FormFile("image")
-		// The file cannot be received.
+		// file, err := c.FormFile("image")
+		form, err := c.MultipartForm()
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-				"message": "No file is received",
-			})
+			c.String(http.StatusBadRequest, fmt.Sprintf("get form err: %s", err.Error()))
 			return
 		}
-		// Retrieve file information
-		extension := filepath.Ext(file.Filename)
-		// Generate random file name for the new uploaded file so it doesn't override the old file with same name
-		newFileName := uuid.New().String() + extension
+		files := form.File["files"]
+		for _, file := range files {
+			// Retrieve file information
+			extension := filepath.Ext(file.Filename)
+			// Generate random file name for the new uploaded file so it doesn't override the old file with same name
+			newFileName := uuid.New().String() + extension
+			// log.Printf("Saving %s as %s\n", filepath.Base(file.Filename), newFileName)
 
-		// The file is received, so let's save it
-		if err := c.SaveUploadedFile(file, "/Users/macbook/go/src/MathbloomBE/uploads/"+newFileName); err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-				"message": "Unable to save the file",
-			})
-			return
+			// The file is received, so let's save it
+			if err := c.SaveUploadedFile(file, "/Users/macbook/go/src/MathbloomBE/uploads/"+newFileName); err != nil {
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+					"message": "Unable to save the file",
+				})
+				return
+			}
 		}
 
 		// File saved successfully. Return proper result
