@@ -58,12 +58,13 @@ func UpsertQuestionWithEmail(c *gin.Context) {
 	db.Where("email = ?", email).First(&user)
 	if user.ID > 0 {
 		var question models.Question
-		err := c.BindJSON(&question)
-		if err != nil {
-			log.Print(err)
+		if err := c.ShouldBind(&question); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error() + " with email: " + email})
+			return
 		}
 		// Upsert into questions
 		question.UserId = user.ID
+		log.Printf("question: %+v\n", question)
 		if question.ID > 0 {
 			db.Assign(models.Question{
 				UserId:     user.ID,
@@ -89,7 +90,6 @@ func UpsertQuestionAttachmentWithEmail(c *gin.Context) {
 	var user models.User
 	db.Where("email = ?", email).First(&user)
 	if user.ID > 0 {
-		// file, err := c.FormFile("image")
 		form, err := c.MultipartForm()
 		if err != nil {
 			c.String(http.StatusBadRequest, fmt.Sprintf("get form err: %s", err.Error()))
@@ -114,27 +114,6 @@ func UpsertQuestionAttachmentWithEmail(c *gin.Context) {
 
 		// File saved successfully. Return proper result
 		c.JSON(http.StatusOK, gin.H{"message": "Your file has been successfully uploaded"})
-
-		/*
-			var question models.Question
-			err := c.BindJSON(&question)
-			if err != nil {
-				log.Print(err)
-			}
-			// Upsert into questions
-			question.UserId = user.ID
-			if question.ID > 0 {
-				db.Assign(models.Question{
-					UserId:     user.ID,
-					Question:   question.Question,
-					IsAnswered: question.IsAnswered,
-				}).
-					FirstOrCreate(&question)
-			} else {
-				db.Create(&question)
-			}
-		*/
-		// c.JSON(http.StatusOK, gin.H{"error": "", "id": question.ID})
 	} else {
 		c.JSON(http.StatusOK, gin.H{"error": "no user exists for email: " + email})
 	}
