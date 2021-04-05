@@ -17,6 +17,8 @@ func SetupModels() *gorm.DB {
 	db.AutoMigrate(&Problem{})
 	db.AutoMigrate(&Question{})
 	db.AutoMigrate(&Answer{})
+	db.AutoMigrate(&Ticket{})
+	db.AutoMigrate(&File{})
 
 	return db
 }
