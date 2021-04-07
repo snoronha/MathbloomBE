@@ -4,6 +4,7 @@ import (
 	"MathbloomBE/models"
 	"fmt"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -52,7 +53,7 @@ func GetQuestionsByEmail(c *gin.Context) {
 // Derive userId from :email and upsert into questions
 func UpsertQuestionWithEmail(c *gin.Context) {
 	db := c.MustGet("db").(*gorm.DB)
-	UPLOADS_DIR := "/Users/macbook/go/src/MathbloomBE/uploads"
+	UPLOADS_DIR := os.Getenv("GOPATH") + "/src/MathbloomBE/uploads"
 	// Check if user with email exists
 	email := c.Param("email")
 	var user models.User
