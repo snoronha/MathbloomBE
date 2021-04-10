@@ -28,6 +28,7 @@ func GetQuestionById(c *gin.Context) {
 func GetQuestionsByEmail(c *gin.Context) {
 	var questions []models.Question
 	var answers []models.Answer
+	var files []models.File
 	db := c.MustGet("db").(*gorm.DB)
 	// Check if user with email exists
 	email := c.Param("email")
@@ -36,16 +37,23 @@ func GetQuestionsByEmail(c *gin.Context) {
 	if user.ID > 0 {
 		db.Where("user_id = ?", user.ID).Find(&questions)
 		// iterate over questions to get question.ID
-		// retrieve answers with those question.IDs
+		// retrieve answers <-> question.IDs, files <-> question.FileTicketId
 		questionIds := []uint{}
+		fileTicketIds := []uint{}
 		for _, question := range questions {
 			questionIds = append(questionIds, question.ID)
+			if question.FileTicketId > 0 {
+				fileTicketIds = append(fileTicketIds, question.FileTicketId)
+			}
 		}
 		// log.Print(questionIds)
 		db.Where("question_id IN (?)", questionIds).Find(&answers)
-		c.JSON(http.StatusOK, gin.H{"questions": questions, "answers": answers})
+		if len(fileTicketIds) > 0 {
+			db.Where("ticket_id IN (?)", fileTicketIds).Find(&files)
+		}
+		c.JSON(http.StatusOK, gin.H{"questions": questions, "answers": answers, "files": files})
 	} else {
-		c.JSON(http.StatusOK, gin.H{"questions": questions, "answers": answers})
+		c.JSON(http.StatusOK, gin.H{"questions": questions, "answers": answers, "files": files})
 	}
 }
 
@@ -78,6 +86,7 @@ func UpsertQuestionWithEmail(c *gin.Context) {
 			newFileName := newUuid + extension
 			hex1 := strings.ToUpper(newUuid[0:2])
 			hex2 := strings.ToUpper(newUuid[2:4])
+			downloadUrl := "/uploads/" + hex1 + "/" + hex2 + "/" + newFileName
 			fullFilePath := UPLOADS_DIR + "/" + hex1 + "/" + hex2 + "/" + newFileName
 			// log.Printf("Saving %s as %s\n", filepath.Base(file.Filename), fullFilePath)
 
@@ -90,7 +99,7 @@ func UpsertQuestionWithEmail(c *gin.Context) {
 				return
 			} else {
 				// Insert meta data as row in files table
-				file := models.File{Path: fullFilePath, TicketId: ticketId}
+				file := models.File{Path: fullFilePath, Url: downloadUrl, TicketId: ticketId}
 				result := db.Create(&file)
 				if result.Error != nil {
 					c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
