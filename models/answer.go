@@ -1,13 +1,16 @@
 package models
 
 import (
-	"github.com/jinzhu/gorm"
+	"time"
 )
 
 type Answer struct {
-	gorm.Model
-	QuestionId uint   `json:"questionId"`
-	UserId     uint   `json:"userId"`
-	Answer     string `json:"answer" gorm:"type:varchar(1024)"`
-	IsAccepted bool   `json:"isAccepted" gorm:"default:false"`
+	ID           uint   `form:"id" json:"id" gorm:"primaryKey"`
+	QuestionId   uint   `form:"questionId" json:"questionId"`
+	UserId       uint   `json:"userId"`
+	Answer       string `form:"answer" json:"answer" gorm:"type:varchar(1024)"`
+	FileTicketId uint   `form:"fileTicketId" json:"fileTicketId"`
+	IsAccepted   bool   `form:"isAccepted" json:"isAccepted" gorm:"default:false"`
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
 }

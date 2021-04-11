@@ -2,11 +2,15 @@ package controllers
 
 import (
 	"MathbloomBE/models"
-	"log"
+	"fmt"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/jinzhu/gorm"
 )
 
@@ -35,18 +39,67 @@ func GetAnswersByQuestionId(c *gin.Context) {
 // Derive userId from :email and upsert into answers
 func UpsertAnswerWithEmail(c *gin.Context) {
 	db := c.MustGet("db").(*gorm.DB)
+	UPLOADS_DIR := os.Getenv("GOPATH") + "/src/MathbloomBE/uploads"
 	// Check if user with email exists
 	email := c.Param("email")
 	var user models.User
 	db.Where("email = ?", email).First(&user)
 	if user.ID > 0 {
-		var answer models.Answer
-		err := c.BindJSON(&answer)
+		form, err := c.MultipartForm()
 		if err != nil {
-			log.Print(err)
+			c.String(http.StatusBadRequest, fmt.Sprintf("get form err: %s", err.Error()))
+			return
 		}
-		// Upsert into questions
+
+		var ticketId uint = 0
+		files := form.File["files"]
+		if len(files) > 0 {
+			ticketId = GetNextTicket(db, "file") // ticket for ticketType == "file"
+		}
+		for _, file := range files {
+			// Retrieve file information
+			extension := filepath.Ext(file.Filename)
+			// Generate random file name for the new uploaded file
+			// so it doesn't override the old file with same name
+			newUuid := uuid.New().String()
+			newFileName := newUuid + extension
+			hex1 := strings.ToUpper(newUuid[0:2])
+			hex2 := strings.ToUpper(newUuid[2:4])
+			downloadUrl := "/uploads/" + hex1 + "/" + hex2 + "/" + newFileName
+			fullFilePath := UPLOADS_DIR + "/" + hex1 + "/" + hex2 + "/" + newFileName
+			// log.Printf("Saving %s as %s\n", filepath.Base(file.Filename), fullFilePath)
+
+			// The file is received, so let's save it
+			err := c.SaveUploadedFile(file, fullFilePath)
+			if err != nil {
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+					"message": "Unable to save the file",
+				})
+				return
+			} else {
+				// Insert meta data as row in files table
+				file := models.File{Path: fullFilePath, Url: downloadUrl, TicketId: ticketId}
+				result := db.Create(&file)
+				if result.Error != nil {
+					c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+						"message": "File save failed: " + fullFilePath,
+					})
+					return
+				}
+			}
+		}
+
+		var answer models.Answer
+		if err := c.ShouldBind(&answer); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error() + " with email: " + email})
+			return
+		}
+
+		// Upsert into answers
 		answer.UserId = user.ID
+		if ticketId > 0 { // need to check if question.FileTicketId is nil?
+			answer.FileTicketId = ticketId
+		}
 		if answer.ID > 0 {
 			db.Assign(models.Answer{
 				UserId:     user.ID,

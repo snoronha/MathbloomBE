@@ -48,6 +48,11 @@ func GetQuestionsByEmail(c *gin.Context) {
 		}
 		// log.Print(questionIds)
 		db.Where("question_id IN (?)", questionIds).Find(&answers)
+		for _, answer := range answers {
+			if answer.FileTicketId > 0 {
+				fileTicketIds = append(fileTicketIds, answer.FileTicketId)
+			}
+		}
 		if len(fileTicketIds) > 0 {
 			db.Where("ticket_id IN (?)", fileTicketIds).Find(&files)
 		}
